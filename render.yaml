@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: set-card-game
+    runtime: node
+    buildCommand: cd server && npm install && npm run build && cd ../client && npm install && npm run build && cp -r dist ../server/public
+    startCommand: cd server && node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
