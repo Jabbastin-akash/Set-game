@@ -4,8 +4,7 @@ import {
     AppState,
     AppAction,
     GameState,
-    Card,
-    ConnectionState
+    Card
 } from '../types';
 
 const SERVER_URL = import.meta.env.PROD ? '' : 'http://localhost:3001';

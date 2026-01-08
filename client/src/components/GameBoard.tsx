@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card as CardType, GameState, PublicPlayerState } from '../types';
+import { Card as CardType, GameState } from '../types';
 import { Card } from './Card';
 import { PlayerList } from './PlayerList';
 
