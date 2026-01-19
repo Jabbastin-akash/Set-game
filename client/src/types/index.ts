@@ -1,6 +1,6 @@
 // Shared types - keep in sync with server
 
-export type CardType = 'A' | 'B' | 'C';
+export type CardType = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface Card {
     id: string;
@@ -17,6 +17,7 @@ export interface PublicPlayerState {
     hasReacted: boolean;
     connected: boolean;
     isHost: boolean;
+    score: number;
 }
 
 export interface GameState {
@@ -30,6 +31,9 @@ export interface GameState {
     roundNumber: number;
     minPlayers: number;
     declaringPlayer: string | null;
+    matchNumber: number;
+    totalMatches: number;
+    gameWinner: string | null;
 }
 
 // Connection state

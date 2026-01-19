@@ -13,6 +13,7 @@ interface Props {
     onReact: () => void;
     onLeaveRoom: () => void;
     onStartGame: () => void;
+    onStartNextMatch: () => void;
 }
 
 export const GameBoard: React.FC<Props> = ({
@@ -25,14 +26,21 @@ export const GameBoard: React.FC<Props> = ({
     onReact,
     onLeaveRoom,
     onStartGame,
+    onStartNextMatch,
 }) => {
     const currentPlayer = gameState.players.find(p => p.id === playerId);
     const isHost = currentPlayer?.isHost ?? false;
     const canStart = isHost && gameState.players.length >= gameState.minPlayers;
 
-    const hasWinningHand = cards.length === 3 &&
-        cards[0].type === cards[1].type &&
-        cards[1].type === cards[2].type;
+    // Check if player has 3 or more cards of the same type
+    const hasWinningHand = (() => {
+        if (cards.length < 3) return false;
+        const typeCounts: Record<string, number> = {};
+        for (const card of cards) {
+            typeCounts[card.type] = (typeCounts[card.type] || 0) + 1;
+        }
+        return Object.values(typeCounts).some(count => count >= 3);
+    })();
 
     const isWinner = gameState.winner === playerId;
     const isLoser = gameState.loser === playerId;
@@ -67,6 +75,9 @@ export const GameBoard: React.FC<Props> = ({
             case 'selecting':
                 return (
                     <div className="phase-content">
+                        <div className="match-info">
+                            <span className="match-badge">Match {gameState.matchNumber}/{gameState.totalMatches}</span>
+                        </div>
                         <h2>Round {gameState.roundNumber}</h2>
                         <p>Select a card to pass clockwise</p>
                         <div className="cards-container">
@@ -129,16 +140,25 @@ export const GameBoard: React.FC<Props> = ({
                     </div>
                 );
 
-            case 'finished':
+            case 'finished': {
+                const isGameComplete = gameState.matchNumber >= gameState.totalMatches;
+                const canStartNextMatch = !isGameComplete && isHost;
+                
                 return (
                     <div className="phase-content game-over">
-                        <h2>🏁 Game Over!</h2>
-                        <div className="results">
+                        {isGameComplete ? (
+                            <h2>🏆 Game Complete!</h2>
+                        ) : (
+                            <h2>🏁 Match {gameState.matchNumber} of {gameState.totalMatches} Complete!</h2>
+                        )}
+                        
+                        <div className="match-results">
                             <div className="result-item winner-result">
-                                <span className="result-label">Winner:</span>
+                                <span className="result-label">{isGameComplete ? 'Match Winner:' : 'Winner:'}</span>
                                 <span className="result-name">
                                     👑 {gameState.players.find(p => p.id === gameState.winner)?.name}
                                     {isWinner && ' (You!)'}
+                                    <span className="points-change">+2 pts</span>
                                 </span>
                             </div>
                             <div className="result-item loser-result">
@@ -146,9 +166,24 @@ export const GameBoard: React.FC<Props> = ({
                                 <span className="result-name">
                                     💀 {gameState.players.find(p => p.id === gameState.loser)?.name}
                                     {isLoser && ' (You)'}
+                                    <span className="points-change negative">-1 pt</span>
                                 </span>
                             </div>
                         </div>
+
+                        {isGameComplete && gameState.gameWinner && (
+                            <div className="final-winner">
+                                <h3>🎉 Overall Winner 🎉</h3>
+                                <p className="final-winner-name">
+                                    {gameState.players.find(p => p.id === gameState.gameWinner)?.name}
+                                    {gameState.gameWinner === playerId && ' (You!)'}
+                                </p>
+                                <p className="final-score">
+                                    Final Score: {gameState.players.find(p => p.id === gameState.gameWinner)?.score} pts
+                                </p>
+                            </div>
+                        )}
+
                         <div className="cards-container final-cards">
                             {cards.map((card) => (
                                 <Card
@@ -160,14 +195,29 @@ export const GameBoard: React.FC<Props> = ({
                                 />
                             ))}
                         </div>
-                        <button
-                            className="btn btn-secondary btn-large"
-                            onClick={onLeaveRoom}
-                        >
-                            Leave Room
-                        </button>
+
+                        <div className="action-buttons">
+                            {canStartNextMatch && (
+                                <button
+                                    className="btn btn-primary btn-large"
+                                    onClick={onStartNextMatch}
+                                >
+                                    Start Match {gameState.matchNumber + 1} →
+                                </button>
+                            )}
+                            {!isHost && !isGameComplete && (
+                                <p className="waiting-text">Waiting for host to start next match...</p>
+                            )}
+                            <button
+                                className="btn btn-secondary"
+                                onClick={onLeaveRoom}
+                            >
+                                Leave Room
+                            </button>
+                        </div>
                     </div>
                 );
+            }
 
             default:
                 return null;

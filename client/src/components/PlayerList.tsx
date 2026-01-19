@@ -7,6 +7,7 @@ interface Props {
     winnerId: string | null;
     loserId: string | null;
     declaringPlayerId: string | null;
+    showScores?: boolean;
 }
 
 export const PlayerList: React.FC<Props> = ({
@@ -14,7 +15,8 @@ export const PlayerList: React.FC<Props> = ({
     currentPlayerId,
     winnerId,
     loserId,
-    declaringPlayerId
+    declaringPlayerId,
+    showScores = true
 }) => {
     const getPlayerStatus = (player: PublicPlayerState) => {
         if (player.id === winnerId) return '👑 Winner!';
@@ -26,23 +28,34 @@ export const PlayerList: React.FC<Props> = ({
         return '⏳ Thinking...';
     };
 
+    // Sort players by score (highest first)
+    const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
     return (
         <div className="player-list">
             <h3>Players</h3>
             <ul>
-                {players.map((player) => (
+                {sortedPlayers.map((player, index) => (
                     <li
                         key={player.id}
                         className={`player-item ${player.id === currentPlayerId ? 'current-player' : ''
                             } ${!player.connected ? 'disconnected' : ''} ${player.id === winnerId ? 'winner' : ''
                             } ${player.id === loserId ? 'loser' : ''}`}
                     >
-                        <span className="player-name">
-                            {player.name}
-                            {player.isHost && <span className="host-badge">Host</span>}
-                            {player.id === currentPlayerId && <span className="you-badge">You</span>}
-                        </span>
-                        <span className="player-status">{getPlayerStatus(player)}</span>
+                        <div className="player-info">
+                            <span className="player-rank">{index + 1}.</span>
+                            <span className="player-name">
+                                {player.name}
+                                {player.isHost && <span className="host-badge">Host</span>}
+                                {player.id === currentPlayerId && <span className="you-badge">You</span>}
+                            </span>
+                        </div>
+                        <div className="player-right">
+                            {showScores && (
+                                <span className="player-score">{player.score} pts</span>
+                            )}
+                            <span className="player-status">{getPlayerStatus(player)}</span>
+                        </div>
                     </li>
                 ))}
             </ul>

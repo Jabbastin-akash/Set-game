@@ -9,9 +9,11 @@ interface Props {
 }
 
 const cardColors: Record<string, string> = {
-    A: '#FF6B6B',
-    B: '#4ECDC4',
-    C: '#FFE66D',
+    A: '#FF6B6B',  // Red
+    B: '#4ECDC4',  // Teal
+    C: '#FFE66D',  // Yellow
+    D: '#A78BFA',  // Purple
+    E: '#34D399',  // Green
 };
 
 export const Card: React.FC<Props> = ({ card, isSelected, disabled, onClick }) => {

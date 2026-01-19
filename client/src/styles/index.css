@@ -626,6 +626,101 @@ body {
     color: var(--text-secondary);
 }
 
+/* Match Info */
+.match-info {
+    margin-bottom: 12px;
+}
+
+.match-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background: var(--primary-color);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Points Display */
+.points-change {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: var(--success-color);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.points-change.negative {
+    background: var(--danger-color);
+}
+
+/* Player Score */
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.player-rank {
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 24px;
+}
+
+.player-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.player-score {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.875rem;
+}
+
+/* Final Winner */
+.final-winner {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    padding: 24px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    margin: 16px 0;
+}
+
+.final-winner h3 {
+    color: #000;
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+}
+
+.final-winner-name {
+    color: #000;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.final-score {
+    color: #000;
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.match-results {
+    margin-bottom: 16px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .game-main {
@@ -668,5 +763,11 @@ body {
 
     .game-title {
         font-size: 2rem;
+    }
+    
+    .player-right {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
     }
 }

@@ -30,6 +30,7 @@ function App() {
                     onReact={actions.reactToWin}
                     onLeaveRoom={actions.leaveRoom}
                     onStartGame={actions.startGame}
+                    onStartNextMatch={actions.startNextMatch}
                 />
             ) : (
                 <div className="loading">Loading game...</div>

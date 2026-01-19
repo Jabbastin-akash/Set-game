@@ -1,6 +1,6 @@
 // Shared types between server and client
 
-export type CardType = 'A' | 'B' | 'C';
+export type CardType = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export interface Card {
     id: string;
@@ -28,6 +28,7 @@ export interface PublicPlayerState {
     hasReacted: boolean;
     connected: boolean;
     isHost: boolean;
+    score: number;
 }
 
 export interface GameState {
@@ -41,6 +42,9 @@ export interface GameState {
     roundNumber: number;
     minPlayers: number;
     declaringPlayer: string | null;
+    matchNumber: number;
+    totalMatches: number;
+    gameWinner: string | null;
 }
 
 // Events from client to server
@@ -53,6 +57,7 @@ export interface ClientEvents {
     DECLARE_WIN: {};
     REACT_TO_WIN: {};
     RECONNECT: { roomCode: string; playerId: string };
+    START_NEXT_MATCH: {};
 }
 
 // Events from server to client
@@ -68,6 +73,8 @@ export interface ServerEvents {
     WIN_DECLARED: { playerId: string; playerName: string };
     PLAYER_REACTED: { playerId: string; reactionOrder: string[] };
     GAME_ENDED: { winner: string; loser: string; gameState: GameState };
+    MATCH_ENDED: { matchWinner: string; matchLoser: string; matchNumber: number; gameState: GameState };
+    NEXT_MATCH_STARTED: { gameState: GameState };
     GAME_STATE_UPDATE: { gameState: GameState };
     ERROR: { message: string; code: string };
     PLAYER_DISCONNECTED: { playerId: string };

@@ -246,20 +246,72 @@ export function setupSocketHandlers(io: Server): void {
                     reactionOrder: game.getReactionOrder()
                 });
 
-                // Check if game ended
+                // Check if match ended
                 if (game.getPhase() === 'finished') {
-                    io.to(game.roomCode).emit('GAME_ENDED', {
-                        winner: game.getWinner(),
-                        loser: game.getLoser(),
-                        gameState: game.getPublicState()
-                    });
-                    console.log(`Game ended in room ${game.roomCode}`);
+                    // Check if this is the final match or just a match end
+                    if (game.isGameComplete()) {
+                        io.to(game.roomCode).emit('GAME_ENDED', {
+                            winner: game.getGameWinner(),
+                            loser: game.getLoser(),
+                            gameState: game.getPublicState()
+                        });
+                        console.log(`Game completed in room ${game.roomCode}`);
+                    } else {
+                        io.to(game.roomCode).emit('MATCH_ENDED', {
+                            matchWinner: game.getWinner(),
+                            matchLoser: game.getLoser(),
+                            matchNumber: game.getMatchNumber(),
+                            gameState: game.getPublicState()
+                        });
+                        console.log(`Match ${game.getMatchNumber()} ended in room ${game.roomCode}`);
+                    }
                 } else {
                     io.to(game.roomCode).emit('GAME_STATE_UPDATE', { gameState: game.getPublicState() });
                 }
             } catch (error) {
                 console.error('REACT_TO_WIN error:', error);
                 socket.emit('ERROR', { message: 'Failed to react', code: 'REACT_FAILED' });
+            }
+        });
+
+        // Start Next Match
+        socket.on('START_NEXT_MATCH', () => {
+            try {
+                const { game, player } = gameManager.getPlayerBySocketId(socket.id);
+
+                if (!game || !player) {
+                    socket.emit('ERROR', { message: 'Not in a game', code: 'NOT_IN_GAME' });
+                    return;
+                }
+
+                if (!player.isHost) {
+                    socket.emit('ERROR', { message: 'Only host can start next match', code: 'NOT_HOST' });
+                    return;
+                }
+
+                if (!game.canStartNextMatch()) {
+                    socket.emit('ERROR', { message: 'Cannot start next match', code: 'CANNOT_START_NEXT' });
+                    return;
+                }
+
+                if (!game.startNextMatch()) {
+                    socket.emit('ERROR', { message: 'Failed to start next match', code: 'START_NEXT_FAILED' });
+                    return;
+                }
+
+                // Send new cards to each player
+                for (const p of game.getAllPlayers()) {
+                    if (p.connected) {
+                        io.to(p.socketId).emit('CARDS_DEALT', { cards: game.getPlayerCards(p.id) });
+                    }
+                }
+
+                io.to(game.roomCode).emit('NEXT_MATCH_STARTED', { gameState: game.getPublicState() });
+
+                console.log(`Match ${game.getMatchNumber()} started in room ${game.roomCode}`);
+            } catch (error) {
+                console.error('START_NEXT_MATCH error:', error);
+                socket.emit('ERROR', { message: 'Failed to start next match', code: 'START_NEXT_FAILED' });
             }
         });
 

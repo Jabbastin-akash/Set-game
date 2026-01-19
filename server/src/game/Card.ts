@@ -10,8 +10,8 @@ export class CardDeck {
     }
 
     private generateDeck(playerCount: number): void {
-        const cardTypes: CardType[] = ['A', 'B', 'C'];
-        const copiesPerType = playerCount * 3;
+        const cardTypes: CardType[] = ['A', 'B', 'C', 'D', 'E'];
+        const copiesPerType = playerCount * 5;
 
         for (const type of cardTypes) {
             for (let i = 0; i < copiesPerType; i++) {

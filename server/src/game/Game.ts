@@ -14,9 +14,14 @@ export class Game {
     private declaringPlayer: string | null = null;
     private reactionOrder: string[] = [];
     private roundNumber: number = 0;
+    private matchNumber: number = 0;
+    private gameWinner: string | null = null;
 
     private static readonly MIN_PLAYERS = 3;
-    private static readonly CARDS_PER_PLAYER = 3;
+    private static readonly CARDS_PER_PLAYER = 5;
+    private static readonly TOTAL_MATCHES = 3;
+    private static readonly WIN_POINTS = 2;
+    private static readonly LOSE_POINTS = -1;
 
     constructor(roomCode: string) {
         this.id = uuidv4();
@@ -95,6 +100,7 @@ export class Game {
 
         this.currentPhase = 'selecting';
         this.roundNumber = 1;
+        this.matchNumber = 1;
         return true;
     }
 
@@ -258,7 +264,79 @@ export class Game {
             }
         }
 
+        // Award points
+        if (this.winner) {
+            const winnerPlayer = this.players.get(this.winner);
+            if (winnerPlayer) {
+                winnerPlayer.addScore(Game.WIN_POINTS);
+            }
+        }
+        if (this.loser) {
+            const loserPlayer = this.players.get(this.loser);
+            if (loserPlayer) {
+                loserPlayer.addScore(Game.LOSE_POINTS);
+            }
+        }
+
+        // Check if this was the last match
+        if (this.matchNumber >= Game.TOTAL_MATCHES) {
+            // Determine overall game winner (highest score)
+            let highestScore = -Infinity;
+            for (const player of this.players.values()) {
+                if (player.score > highestScore) {
+                    highestScore = player.score;
+                    this.gameWinner = player.id;
+                }
+            }
+        }
+
         this.currentPhase = 'finished';
+    }
+
+    // Start next match
+    startNextMatch(): boolean {
+        if (this.currentPhase !== 'finished') return false;
+        if (this.matchNumber >= Game.TOTAL_MATCHES) return false;
+
+        // Reset for new match
+        this.matchNumber++;
+        this.roundNumber = 1;
+        this.winner = null;
+        this.loser = null;
+        this.declaringPlayer = null;
+        this.reactionOrder = [];
+
+        // Reset all players and deal new cards
+        const deck = new CardDeck(this.players.size);
+        for (const player of this.players.values()) {
+            player.resetForNewMatch();
+            player.setCards(deck.deal(Game.CARDS_PER_PLAYER));
+        }
+
+        this.currentPhase = 'selecting';
+        return true;
+    }
+
+    canStartNextMatch(): boolean {
+        return this.currentPhase === 'finished' && 
+               this.matchNumber < Game.TOTAL_MATCHES;
+    }
+
+    isGameComplete(): boolean {
+        return this.currentPhase === 'finished' && 
+               this.matchNumber >= Game.TOTAL_MATCHES;
+    }
+
+    getMatchNumber(): number {
+        return this.matchNumber;
+    }
+
+    getTotalMatches(): number {
+        return Game.TOTAL_MATCHES;
+    }
+
+    getGameWinner(): string | null {
+        return this.gameWinner;
     }
 
     // Reconnection
@@ -308,6 +386,9 @@ export class Game {
             roundNumber: this.roundNumber,
             minPlayers: Game.MIN_PLAYERS,
             declaringPlayer: this.declaringPlayer,
+            matchNumber: this.matchNumber,
+            totalMatches: Game.TOTAL_MATCHES,
+            gameWinner: this.gameWinner,
         };
     }
 

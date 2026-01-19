@@ -11,6 +11,7 @@ export class Player {
     public isHost: boolean = false;
     public socketId: string;
     public disconnectedAt: number | null = null;
+    public score: number = 0;
 
     private static readonly RECONNECT_TIMEOUT = 45000; // 45 seconds
 
@@ -58,9 +59,16 @@ export class Player {
     }
 
     hasWinningHand(): boolean {
-        if (this.cards.length !== 3) return false;
-        return this.cards[0].type === this.cards[1].type &&
-            this.cards[1].type === this.cards[2].type;
+        if (this.cards.length < 3) return false;
+        
+        // Count cards of each type
+        const typeCounts: Record<string, number> = {};
+        for (const card of this.cards) {
+            typeCounts[card.type] = (typeCounts[card.type] || 0) + 1;
+        }
+        
+        // Check if any type has 3 or more cards
+        return Object.values(typeCounts).some(count => count >= 3);
     }
 
     react(): void {
@@ -68,6 +76,16 @@ export class Player {
     }
 
     resetReaction(): void {
+        this.hasReacted = false;
+    }
+
+    addScore(points: number): void {
+        this.score += points;
+    }
+
+    resetForNewMatch(): void {
+        this.cards = [];
+        this.selectedCard = null;
         this.hasReacted = false;
     }
 
@@ -96,6 +114,7 @@ export class Player {
             hasReacted: this.hasReacted,
             connected: this.connected,
             isHost: this.isHost,
+            score: this.score,
         };
     }
 

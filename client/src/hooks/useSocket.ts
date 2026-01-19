@@ -150,6 +150,14 @@ export function useSocket() {
             dispatch({ type: 'UPDATE_GAME_STATE', payload: data.gameState });
         });
 
+        socket.on('MATCH_ENDED', (data: { matchWinner: string; matchLoser: string; matchNumber: number; gameState: GameState }) => {
+            dispatch({ type: 'UPDATE_GAME_STATE', payload: data.gameState });
+        });
+
+        socket.on('NEXT_MATCH_STARTED', (data: { gameState: GameState }) => {
+            dispatch({ type: 'UPDATE_GAME_STATE', payload: data.gameState });
+        });
+
         socket.on('ERROR', (data: { message: string; code: string }) => {
             dispatch({ type: 'SET_ERROR', payload: data.message });
             setTimeout(() => dispatch({ type: 'SET_ERROR', payload: null }), 5000);
@@ -217,6 +225,10 @@ export function useSocket() {
         socketRef.current?.emit('REACT_TO_WIN');
     }, []);
 
+    const startNextMatch = useCallback(() => {
+        socketRef.current?.emit('START_NEXT_MATCH');
+    }, []);
+
     return {
         state,
         actions: {
@@ -227,6 +239,7 @@ export function useSocket() {
             selectCard,
             declareWin,
             reactToWin,
+            startNextMatch,
         },
     };
 }
